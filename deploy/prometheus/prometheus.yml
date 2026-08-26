@@ -1,0 +1,12 @@
+# Prometheus — OTT telemetry sink.
+# The simulator remote-writes here (flag --web.enable-remote-write-receiver).
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: ott-streaming-ops
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

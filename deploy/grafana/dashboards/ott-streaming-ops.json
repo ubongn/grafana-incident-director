@@ -1,0 +1,396 @@
+{
+  "uid": "ott-streaming-ops",
+  "title": "OTT Streaming Operations",
+  "description": "Live telemetry for the simulated OTT platform (StreamFiction). Fed by the telemetry simulator; queried by the Incident Director agent through the Grafana MCP server.",
+  "tags": ["ott", "streaming", "sim", "incident-director"],
+  "schemaVersion": 4100,
+  "version": 1,
+  "editable": true,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+  },
+  "links": [
+    {
+      "title": "Explore evidence: playback errors by region",
+      "type": "link",
+      "url": "/explore?left=%7B%22datasource%22%3A%22prom-ott%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22sum%20by%20(region)%20(rate(ott_playback_errors_total%5B5m%5D))%20%2F%20sum%20by%20(region)%20(rate(ott_playback_attempts_total%5B5m%5D))%22%7D%5D%7D",
+      "targetBlank": true
+    }
+  ],
+  "panels": [
+    {
+      "id": 100,
+      "type": "stat",
+      "title": "Active sessions",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "sum(ott_sessions_active)", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1500000 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 101,
+      "type": "stat",
+      "title": "Playback error rate (global)",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "100 * sum(rate(ott_playback_errors_total[5m])) / sum(rate(ott_playback_attempts_total[5m]))", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "min": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 2 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 102,
+      "type": "stat",
+      "title": "Rebuffer ratio (global)",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "100 * sum(rate(ott_rebuffer_seconds_total[5m])) / sum(rate(ott_watch_seconds_total[5m]))", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "min": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.8 },
+              { "color": "red", "value": 1.5 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Playback health",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 1 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Active sessions by region",
+      "gridPos": { "x": 0, "y": 5, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (region) (ott_sessions_active)", "legendFormat": "{{region}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Playback error rate by region",
+      "gridPos": { "x": 8, "y": 5, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "100 * sum by (region) (rate(ott_playback_errors_total[5m])) / sum by (region) (rate(ott_playback_attempts_total[5m]))", "legendFormat": "{{region}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "transparent", "value": null },
+              { "color": "red", "value": 2 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Rebuffer ratio by region",
+      "gridPos": { "x": 16, "y": 5, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "100 * sum by (region) (rate(ott_rebuffer_seconds_total[5m])) / sum by (region) (rate(ott_watch_seconds_total[5m]))", "legendFormat": "{{region}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 5,
+      "type": "row",
+      "title": "Delivery (CDN / origin)",
+      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 1 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "CDN edge latency (p95) by edge",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "max by (edge) (ott_cdn_edge_latency_ms)", "legendFormat": "{{edge}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "CDN edge 5xx ratio by edge",
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "100 * sum by (edge) (rate(ott_cdn_edge_errors_total{code=~\"5..\"}[5m])) / sum by (edge) (rate(ott_cdn_edge_requests_total[5m]))", "legendFormat": "{{edge}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Origin 5xx rate by origin",
+      "gridPos": { "x": 0, "y": 22, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (origin) (rate(ott_origin_errors_total{code=~\"5..\"}[5m]))", "legendFormat": "{{origin}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Origin latency by origin",
+      "gridPos": { "x": 12, "y": 22, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "max by (origin) (ott_origin_latency_ms)", "legendFormat": "{{origin}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Packaging (transcoders)",
+      "gridPos": { "x": 0, "y": 30, "w": 24, "h": 1 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Transcoder queue depth",
+      "gridPos": { "x": 0, "y": 31, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "max by (transcoder) (ott_transcoder_queue_depth)", "legendFormat": "{{transcoder}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Transcoder packaging lag",
+      "gridPos": { "x": 12, "y": 31, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "max by (transcoder) (ott_transcoder_lag_seconds)", "legendFormat": "{{transcoder}}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    }
+  ]
+}

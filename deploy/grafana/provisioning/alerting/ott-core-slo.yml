@@ -1,0 +1,236 @@
+# OTT core SLO alert rules — provisioned into Grafana unified alerting.
+# The Incident Director agent reads these rules (and their state) through the
+# Grafana MCP server at runtime; this file is the source of truth.
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: ott-playback-slo
+    folder: OTT Incidents
+    interval: 30s
+    rules:
+      - title: Playback error rate burning SLO
+        condition: C
+        for: 2m
+        annotations:
+          summary: "Playback error rate above 2% of attempts"
+          runbook_url: https://github.com/ubongn/grafana-incident-director/blob/main/docs/runbooks/playback-errors.md
+        labels:
+          severity: critical
+          domain: playback
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prom-ott
+            model:
+              expr: sum by (region) (rate(ott_playback_errors_total[5m])) / sum by (region) (rate(ott_playback_attempts_total[5m]))
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              reducer: last
+              expression: A
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [0.02] }
+                  operator: { type: and }
+                  query: { params: [B] }
+                  reducer: { type: last, params: [] }
+                  type: query
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+
+      - title: Rebuffer ratio above budget
+        condition: C
+        for: 3m
+        annotations:
+          summary: "Rebuffer seconds above 1.5% of watch seconds"
+        labels:
+          severity: warning
+          domain: playback
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prom-ott
+            model:
+              expr: sum by (region) (rate(ott_rebuffer_seconds_total[5m])) / sum by (region) (rate(ott_watch_seconds_total[5m]))
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              reducer: last
+              expression: A
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [0.015] }
+                  operator: { type: and }
+                  query: { params: [B] }
+                  reducer: { type: last, params: [] }
+                  type: query
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+
+  - orgId: 1
+    name: ott-delivery
+    folder: OTT Incidents
+    interval: 30s
+    rules:
+      - title: Origin 5xx rate elevated
+        condition: C
+        for: 2m
+        annotations:
+          summary: "Origin returning 5xx above 5 req/s"
+        labels:
+          severity: critical
+          domain: origin
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prom-ott
+            model:
+              expr: sum by (origin) (rate(ott_origin_errors_total[5m]))
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              reducer: last
+              expression: A
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [5] }
+                  operator: { type: and }
+                  query: { params: [B] }
+                  reducer: { type: last, params: [] }
+                  type: query
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+
+      - title: CDN edge latency p95 high
+        condition: C
+        for: 3m
+        annotations:
+          summary: "CDN edge p95 latency above 800ms"
+        labels:
+          severity: warning
+          domain: cdn
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prom-ott
+            model:
+              expr: max by (edge) (ott_cdn_edge_latency_ms)
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              reducer: last
+              expression: A
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [800] }
+                  operator: { type: and }
+                  query: { params: [B] }
+                  reducer: { type: last, params: [] }
+                  type: query
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+
+  - orgId: 1
+    name: ott-packaging
+    folder: OTT Incidents
+    interval: 30s
+    rules:
+      - title: Transcoder lag building
+        condition: C
+        for: 2m
+        annotations:
+          summary: "Transcoder packaging lag above 30s"
+        labels:
+          severity: warning
+          domain: packaging
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: prom-ott
+            model:
+              expr: max by (transcoder) (ott_transcoder_lag_seconds)
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              type: reduce
+              reducer: last
+              expression: A
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: B
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: B
+              conditions:
+                - evaluator: { type: gt, params: [30] }
+                  operator: { type: and }
+                  query: { params: [B] }
+                  reducer: { type: last, params: [] }
+                  type: query
+              settings: {}
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C

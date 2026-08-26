@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: OTT Streaming Operations
+    orgId: 1
+    folder: OTT Streaming Operations
+    folderUid: ott-ops
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: ${GRAFANA_DASHBOARDS_DIR}
