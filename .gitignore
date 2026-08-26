@@ -15,6 +15,13 @@ logs/
 *.db
 *.wal
 
+# --- agent runtime ---
+agent/.venv/
+audit/
+chunks/
+*.egg-info/
+__pycache__/
+
 # --- node ---
 node_modules/
 dist/
