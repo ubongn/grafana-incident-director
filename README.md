@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Grafana](https://img.shields.io/badge/Grafana-%3E%3D11-orange)](https://grafana.com)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash%20%2F%20Pro-4285F4)](https://ai.google.dev)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-3.6%20Flash-4285F4)](https://ai.google.dev)
 [![Status](https://img.shields.io/badge/status-building%20for%20Agentic%20Cinema%20Hackathon-brightgreen)](#roadmap)
 
 > An autonomous incident-direction agent that lives **inside Grafana** and runs
@@ -92,11 +92,40 @@ cd sim && npm install && npm start
 
 A Linux/docker-compose path ships with the hosted-demo milestone.
 
+## Grafana Cloud (live demo deployment)
+
+The demo runs against a real **Grafana Cloud** stack — the same agent code, the
+same runbook, cloud data:
+
+**Stack:** <https://olivetiramisu3480.grafana.net> · **Dashboard:** <https://olivetiramisu3480.grafana.net/d/ott-streaming-ops> (OTT Streaming Operations, 15 panels)
+
+**What runs where**
+
+| Piece | Where | Notes |
+|---|---|---|
+| OTT telemetry simulator | local (detached background process) | remote-writes metrics to hosted Prometheus, pushes logs to hosted Loki; `SIM_CARDINALITY=cloud` keeps it inside the free tier |
+| Prometheus + Loki | Grafana Cloud (hosted) | sim is the only tenant |
+| Dashboard + 5 SLO alert rules | Grafana Cloud | provisioned by `deploy/provision_cloud.py` (idempotent API push) |
+| Incident Director agent | local | talks to the cloud stack **exclusively through the Grafana MCP server** (`mcp-grafana`) with a service-account token |
+
+**Agent-vs-cloud, end to end:** [`docs/cloud-arc-transcript.md`](docs/cloud-arc-transcript.md) is a captured, unattended run — fault injected into the sim → alert fires in cloud Grafana → the agent detects via MCP, triangulates with cloud PromQL, diagnoses with cloud Loki logs, proposes remediation (approval-gated), and reports. Reproduce it:
+
+```powershell
+deploy\start-sim-cloud-background.cmd   # keep-alive sim (detached, feeds the cloud)
+deploy\run-cloud-arc.cmd                # one full unattended arc against the cloud
+```
+
+Datasources are provisioned with fixed uids (`prom-ott`, `loki-ott`) pointing
+at the stack's hosted Prometheus/Loki — the same uids the local stack and the
+agent's runbook prompts use, so **one agent binary runs unchanged against local
+or cloud**. Credentials are read from a staged `grafana-cloud-creds.txt`
+(never committed; see `.env.example` for the variable names).
+
 ## Roadmap
 
 - [x] **M1** — repo bootstrapped; local Grafana + Prometheus + Loki (Windows binaries); OTT telemetry simulator emitting; dashboards rendering live sim data
-- [ ] **M2** — Grafana app plugin scaffold + Incident Director UI shell; agent runtime with runbook engine; Gemini model-provider layer
-- [ ] **M3** — full Detect → Triangulate → Diagnose → Remediate → Report loop against live sim; annotations + postmortem rendering
+- [x] **M2** — agent runtime with runbook engine + Gemini model-provider layer (45/45 agent tests; app-plugin core deferred in favor of the MCP-first pivot)
+- [x] **M3** — full Detect → Triangulate → Diagnose → Remediate → Report loop against **Grafana Cloud** telemetry; alerting via unified alerting API; audit chain — [see the cloud arc transcript](docs/cloud-arc-transcript.md)
 - [ ] **M4** — fault-injection demo flow, hosted demo URL, video walkthrough, submission package
 
 ## Suggested repository topics
