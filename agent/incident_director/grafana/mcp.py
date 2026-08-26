@@ -24,7 +24,11 @@ from google.adk.tools.mcp_tool.mcp_toolset import (
 from ..config import Settings
 
 # Phase tool allowlists (names as exposed by mcp-grafana v1.2.0, 68 tools).
-DETECT_TOOLS = ("list_alert_groups", "get_alert_group", "get_annotations")
+# OSS-Grafana only: list_alert_groups/get_alert_group are Grafana OnCall
+# plugin tools and 404 on vanilla Grafana — DETECT uses the unified-alerting
+# rule API instead (alerting_manage_rules operation=list; verified live) plus
+# the raw API escape hatch for per-instance alert detail (edge/region split).
+DETECT_TOOLS = ("alerting_manage_rules", "grafana_api_request", "get_annotations")
 TRIANGULATE_TOOLS = (
     "search_dashboards",
     "get_dashboard_by_uid",

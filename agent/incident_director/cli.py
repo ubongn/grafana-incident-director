@@ -72,8 +72,8 @@ def _cmd_probe(args: argparse.Namespace) -> int:
         try:
             out = await run_phase_agent(
                 agent,
-                "Call list_alert_groups and reply with a one-line summary of alert groups "
-                "as JSON: {\"summary\": \"...\"}",
+                "Call alerting_manage_rules (operation=list) and reply with a one-line "
+                "summary of alert rule states as JSON: {\"summary\": \"...\"}",
                 timeout_s=90.0,
             )
             print(f"tool calls: {out.tool_calls}")

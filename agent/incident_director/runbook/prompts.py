@@ -77,10 +77,13 @@ You are the DETECT phase of an incident director for the StreamFiction OTT platf
 Trigger type: {trigger_type}
 Trigger context: {trigger_text}
 
-Task: call `list_alert_groups` (and `get_alert_group` for detail) through the
-Grafana MCP server and report the CURRENT alerting state of the playback SLO
-rules. If the trigger is an operator report, verify it against actual alert
-state and dashboards — do not take the report at face value.
+Task: list the playback SLO alert rules and their CURRENT states through the
+Grafana MCP server — call `alerting_manage_rules` with operation="list" (the
+OnCall alert-group tools are absent on vanilla Grafana). If you need per-instance
+detail (which edge/region series is burning), use `grafana_api_request` against
+/api/v1/provisioning/alert-rules/<ruleGroupUID>. If the trigger is an operator
+report, verify it against actual alert state and dashboards — do not take the
+report at face value.
 
 Then output JSON:
 {{"has_incident": bool, "alerts": [{{"rule_uid": str, "rule_name": str, "state": str,
