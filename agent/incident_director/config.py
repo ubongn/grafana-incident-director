@@ -114,3 +114,7 @@ def apply_ai_env(settings: Settings) -> None:
     """
     os.environ.setdefault("GOOGLE_API_KEY", settings.gemini_api_key)
     os.environ.setdefault("GEMINI_API_KEY", settings.gemini_api_key)
+    os.environ.setdefault("GOOGLE_GENAI_API_KEY", settings.gemini_api_key)
+    # never accidentally take the Vertex/ADC path when an AI Studio key is set
+    os.environ.pop("GOOGLE_GENAI_USE_VERTEXAI", None)
+    os.environ.pop("GOOGLE_VERTEXAI_PROJECT", None)

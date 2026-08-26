@@ -63,6 +63,9 @@ def _cmd_probe(args: argparse.Namespace) -> int:
         if problems:
             print("blocked:\n  - " + "\n  - ".join(problems))
             return 2
+        from .config import apply_ai_env
+
+        apply_ai_env(settings)
         command, argv = settings.mcp_resolved_command
         print(f"MCP launch: {command} {' '.join(argv)}  ->  {settings.grafana_url}")
         agent = build_phase_agent(settings, args.phase)
