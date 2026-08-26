@@ -27,7 +27,7 @@ _APPROVAL_MODES = ("interactive", "refuse_unattended", "auto_approve")
 class Settings:
     # --- AI (Google-only) ---
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.6-flash"  # 2.5-flash sunset for API keys 2026-08
     gemini_thinking_budget: int = 0  # 0 disables thinking (speed + determinism)
 
     # --- Grafana & MCP ---
@@ -88,7 +88,7 @@ def load_settings(env: dict[str, str] | None = None) -> Settings:
 
     return Settings(
         gemini_api_key=get("GEMINI_API_KEY", "").strip(),
-        gemini_model=get("GEMINI_MODEL", "gemini-2.5-flash").strip(),
+        gemini_model=get("GEMINI_MODEL", "gemini-3.6-flash").strip(),
         gemini_thinking_budget=int(get("GEMINI_THINKING_BUDGET", "0")),
         grafana_url=get("GRAFANA_URL", "http://localhost:3001").strip().rstrip("/"),
         grafana_token=get("GRAFANA_SERVICE_ACCOUNT_TOKEN", "").strip(),
