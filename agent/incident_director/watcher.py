@@ -19,9 +19,9 @@ from .config import Settings
 RULE_TITLES = {
     "ott-playback-errors": "Playback error rate burning SLO",
     "ott-rebuffer": "Rebuffer ratio above budget",
-    "ott-origin-5xx": "Origin 5xx rate burning SLO",
-    "ott-edge-latency": "CDN edge latency above budget",
-    "ott-transcoder-lag": "Transcoder packaging lag above budget",
+    "ott-origin-5xx": "Origin 5xx rate elevated",
+    "ott-edge-latency": "CDN edge latency p95 high",
+    "ott-transcoder-lag": "Transcoder lag building",
 }
 TITLE_TO_UID = {v: k for k, v in RULE_TITLES.items()}
 
@@ -39,14 +39,29 @@ class AlertWatcher:
         )
 
     async def states(self) -> dict[str, str]:
-        """Map of rule uid -> state (normal/pending/firing/...)."""
-        resp = await self._get("/api/alerts")
+        """Map of rule uid -> aggregate state (normal/pending/firing).
+
+        Grafana 13 removed the legacy /api/alerts endpoint; the
+        Prometheus-compatible view (/api/prometheus/grafana/api/v1/alerts)
+        carries one alert PER RULE INSTANCE (per edge/region/... series) with
+        `labels.alertname` (the rule title) and `state` in
+        {Normal, Pending, Alerting}. A rule counts as firing if ANY instance
+        fires — collapsing to the last instance instead would randomly miss
+        the one degraded edge sitting behind five healthy siblings.
+        """
+        resp = await self._get("/api/prometheus/grafana/api/v1/alerts")
         resp.raise_for_status()
+        rank = {"normal": 0, "pending": 1, "firing": 2}
         out: dict[str, str] = {}
-        for a in resp.json():
-            uid = a.get("uid") or TITLE_TO_UID.get(a.get("title", ""))
-            if uid:
-                out[uid] = (a.get("state") or a.get("status", {}).get("state") or "unknown").lower()
+        for a in resp.json().get("data", {}).get("alerts", []):
+            uid = TITLE_TO_UID.get(a.get("labels", {}).get("alertname", ""))
+            if not uid:
+                continue
+            state = {"alerting": "firing", "pending": "pending", "normal": "normal"}.get(
+                (a.get("state") or "").lower(), "unknown"
+            )
+            if rank.get(state, -1) >= rank.get(out.get(uid, "unknown"), -1):
+                out[uid] = state
         return out
 
     async def firing(self) -> list[str]:
