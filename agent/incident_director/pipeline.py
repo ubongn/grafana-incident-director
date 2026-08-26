@@ -43,7 +43,13 @@ def build_arc(settings: Settings | None = None, verbose: bool = True) -> tuple[I
         raise SystemExit("blocked:\n  - " + "\n  - ".join(problems))
     apply_ai_env(settings)
     audit = AuditLog(settings.audit_dir)
-    gate = ApprovalGate(mode=settings.approval_mode)
+    mode = settings.approval_mode
+    if settings.demo_mode and mode == "interactive":
+        # DEMO_MODE=1 means an unattended camera run: never sit at a y/N
+        # prompt and never execute without a human — force refuse_unattended.
+        mode = "refuse_unattended"
+        print("[demo] DEMO_MODE=1 -> approval gate forced to refuse_unattended (unattended never executes)")
+    gate = ApprovalGate(mode=mode)
     executor = RemediationExecutor(settings)
     return IncidentArc(settings, audit, gate, executor, verbose=verbose), settings
 
