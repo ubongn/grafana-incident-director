@@ -24,11 +24,14 @@ ROLES = {
 
 
 def generate_content_config(settings: Settings) -> genai_types.GenerateContentConfig:
+    # budget 0 ("no thinking") is INVALID_ARGUMENT on Gemini 3.x — the API
+    # floor is 1. 1 is the nearest-to-off value valid on both 2.5 and 3.x.
+    budget = settings.gemini_thinking_budget
+    if budget <= 0:
+        budget = 1
     return genai_types.GenerateContentConfig(
         temperature=0.0,
-        thinking_config=genai_types.ThinkingConfig(
-            thinking_budget=settings.gemini_thinking_budget
-        ),
+        thinking_config=genai_types.ThinkingConfig(thinking_budget=budget),
     )
 
 

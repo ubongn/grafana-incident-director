@@ -28,7 +28,7 @@ class Settings:
     # --- AI (Google-only) ---
     gemini_api_key: str = ""
     gemini_model: str = "gemini-3.6-flash"  # 2.5-flash sunset for API keys 2026-08
-    gemini_thinking_budget: int = 0  # 0 disables thinking (speed + determinism)
+    gemini_thinking_budget: int = 0  # <=0 -> API floor (1; 0 is rejected by Gemini 3.x)
 
     # --- Grafana & MCP ---
     grafana_url: str = "http://localhost:3001"
