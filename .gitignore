@@ -30,6 +30,10 @@ coverage/
 .npm/
 .eslintcache
 
+# --- sim run logs (deploy/start-sim-cloud.cmd output) ---
+sim-cloud.log
+sim*.log
+
 # --- editors & OS ---
 .DS_Store
 Thumbs.db
