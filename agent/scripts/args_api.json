@@ -1,0 +1,4 @@
+{
+  "method": "GET",
+  "endpoint": "/api/prometheus/grafana/api/v1/alerts"
+}

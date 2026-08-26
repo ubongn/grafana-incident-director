@@ -1,0 +1,5 @@
+{
+  "dashboardUID": "ott-streaming-ops",
+  "text": "MCP probe: annotation write test",
+  "tags": ["incident-director", "probe"]
+}

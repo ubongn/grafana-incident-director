@@ -1,0 +1,5 @@
+{
+  "logql": "{service=\"cdn\",edge=\"cdn-fra1\"} |= \"504\"",
+  "datasourceUid": "loki-ott",
+  "limit": 2
+}

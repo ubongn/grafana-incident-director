@@ -1,0 +1,8 @@
+{
+  "expr": "sum(ott_sessions_active)",
+  "datasourceUid": "prom-ott",
+  "startTime": "now-5m",
+  "endTime": "now",
+  "queryType": "instant",
+  "stepSeconds": 15
+}
