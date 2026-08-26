@@ -81,7 +81,7 @@ cd grafana-incident-director
 # 1. Download Grafana / Prometheus / Loki binaries (one-time, ~5 min)
 powershell -ExecutionPolicy Bypass -File deploy\setup-windows.ps1
 
-# 2. Start the stack (Grafana :3000, Prometheus :9090, Loki :3100)
+# 2. Start the stack (Grafana :3001, Prometheus :9090, Loki :3100)
 deploy\start-stack.cmd
 
 # 3. Start the OTT telemetry simulator

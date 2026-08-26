@@ -28,10 +28,10 @@ start "prometheus" /min cmd /c ""%PROM_EXE%" --config.file="%REPO%\deploy\promet
 echo [stack] starting loki (:3100)
 start "loki" /min cmd /c ""%LOKI_EXE%" -config.file="%REPO%\deploy\loki\loki-config.yml" >> "%REPO%\.runtime\logs\loki.log" 2>&1"
 
-echo [stack] starting grafana (:3000, admin/admin)
+echo [stack] starting grafana (:3001, admin/admin)
 start "grafana" /min cmd /c ""%GRAFANA_EXE%" server --homepath="%REPO%\.runtime\grafana" --config="%REPO%\deploy\grafana\custom.ini" >> "%REPO%\.runtime\logs\grafana.log" 2>&1"
 
 echo.
-echo [stack] up. Grafana http://localhost:3000 (admin/admin) - Prometheus :9090 - Loki :3100
+echo [stack] up. Grafana http://localhost:3001 (admin/admin) - Prometheus :9090 - Loki :3100
 echo [stack] logs in .runtime\logs\ ; stop with deploy\stop-stack.cmd
 endlocal

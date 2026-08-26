@@ -3,7 +3,7 @@
 # Requires the stack to be running (deploy\start-stack.cmd) and first-login
 # admin/admin to still be active.
 param(
-    [string]$GrafanaUrl = "http://localhost:3000",
+    [string]$GrafanaUrl = "http://localhost:3001",
     [string]$AdminUser = "admin",
     [string]$AdminPass = "admin",
     [string]$AccountName = "incident-director"

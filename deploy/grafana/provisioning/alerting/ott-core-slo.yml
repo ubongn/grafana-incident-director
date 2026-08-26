@@ -9,7 +9,8 @@ groups:
     folder: OTT Incidents
     interval: 30s
     rules:
-      - title: Playback error rate burning SLO
+      - uid: ott-playback-errors
+        title: Playback error rate burning SLO
         condition: C
         for: 2m
         annotations:
@@ -53,7 +54,8 @@ groups:
               maxDataPoints: 43200
               refId: C
 
-      - title: Rebuffer ratio above budget
+      - uid: ott-rebuffer
+        title: Rebuffer ratio above budget
         condition: C
         for: 3m
         annotations:
@@ -101,7 +103,8 @@ groups:
     folder: OTT Incidents
     interval: 30s
     rules:
-      - title: Origin 5xx rate elevated
+      - uid: ott-origin-5xx
+        title: Origin 5xx rate elevated
         condition: C
         for: 2m
         annotations:
@@ -144,7 +147,8 @@ groups:
               maxDataPoints: 43200
               refId: C
 
-      - title: CDN edge latency p95 high
+      - uid: ott-edge-latency
+        title: CDN edge latency p95 high
         condition: C
         for: 3m
         annotations:
@@ -192,7 +196,8 @@ groups:
     folder: OTT Incidents
     interval: 30s
     rules:
-      - title: Transcoder lag building
+      - uid: ott-transcoder-lag
+        title: Transcoder lag building
         condition: C
         for: 2m
         annotations:
