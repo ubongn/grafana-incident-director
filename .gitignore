@@ -1,0 +1,32 @@
+# --- secrets & environment ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+creds*.txt
+agentic-cinema-creds.txt
+
+# --- runtime binaries & local data (downloaded by deploy/setup-windows.ps1) ---
+.runtime/
+deploy/bin/
+data/
+logs/
+*.db
+*.wal
+
+# --- node ---
+node_modules/
+dist/
+build/
+coverage/
+.npm/
+.eslintcache
+
+# --- editors & OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
