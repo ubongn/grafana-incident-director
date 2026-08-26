@@ -39,7 +39,7 @@ def build_phase_agent(settings: Settings, phase: str) -> LlmAgent:
     if phase in ALL_PHASE_TOOLS:
         tools.append(grafana_mcp_toolset(settings, phase))
     return LlmAgent(
-        name=f"incident-{phase}",
+        name=f"incident_{phase}",
         model=settings.gemini_model,
         instruction=ROLES[phase],
         tools=tools,

@@ -16,7 +16,8 @@ import os
 from typing import Iterable
 
 from google.adk.tools.mcp_tool.mcp_toolset import (
-    MCPToolset,
+    McpToolset,
+    StdioConnectionParams,
     StdioServerParameters,
 )
 
@@ -68,16 +69,21 @@ def mcp_server_params(settings: Settings) -> StdioServerParameters:
     return StdioServerParameters(command=command, args=args, env=env)
 
 
+def mcp_connection(settings: Settings) -> StdioConnectionParams:
+    """Connection params for one mcp-grafana stdio child process."""
+    return StdioConnectionParams(server_params=mcp_server_params(settings))
+
+
 def grafana_mcp_toolset(
     settings: Settings,
     phase: str,
     extra_tools: Iterable[str] = (),
-) -> MCPToolset:
+) -> McpToolset:
     """Build the MCPToolset for one phase (its own mcp-grafana process)."""
     names = ALL_PHASE_TOOLS.get(phase, tuple(extra_tools))
     if extra_tools:
         names = tuple(dict.fromkeys((*names, *extra_tools)))
-    return MCPToolset(
-        stdio_server_params=mcp_server_params(settings),
+    return McpToolset(
+        connection_params=mcp_connection(settings),
         tool_filter=list(names),
     )
