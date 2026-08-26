@@ -16,9 +16,10 @@ if "%GRAFANA_URL%"=="" echo no GRAFANA_URL in %CREDS% & exit /b 2
 set "GRAFANA_SERVICE_ACCOUNT_TOKEN=%GRAFANA_SA_TOKEN%"
 set "DEMO_MODE=1"
 set "SIM_CONTROL_URL=http://localhost:8790"
-rem Gemini 3.x flash returns transient 503 "high demand" under load; the phase
-retrier rides those out (each retry is a fresh attempt).
-set "PHASE_RETRIES=3"
+rem Gemini 3.x flash occasionally 503s ("high demand") — the phase retrier
+rem rides those out; each retry is a fresh attempt. NB: free-tier keys have a
+rem per-day request quota, retries spend it — use a billed key for demos.
+set "PHASE_RETRIES=2"
 echo agent arc against %GRAFANA_URL% (scenario %SCENARIO%, unattended)
 pushd agent
 ".venv\Scripts\python.exe" -m incident_director.cli demo --scenario %SCENARIO%
