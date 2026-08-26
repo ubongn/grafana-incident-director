@@ -126,12 +126,18 @@ export function computeTick({ tick, nowMs, active }) {
   return state;
 }
 
-export function buildSamples(state, counters) {
+export function buildSamples(state, counters, opts = {}) {
+  const cardinality = opts.cardinality || "full"; // "full" | "cloud" (see README)
+  const jobLabel = opts.jobLabel || ""; // e.g. "hiclaw-sim": stamps every series
   const samples = [];
 
   const push = (name, labels, value) =>
     samples.push({
-      labels: { __name__: name, ...labels },
+      labels: {
+        __name__: name,
+        ...(jobLabel ? { job: jobLabel } : {}),
+        ...labels,
+      },
       samples: [{ value: Math.max(0, typeof value === "number" ? round2(value) : value) }],
     });
 
@@ -155,16 +161,35 @@ export function buildSamples(state, counters) {
       push("ott_playback_attempts_total", labels, counters["attempts" + JSON.stringify(labels)]);
       cum("errors", labels).add(row.errors);
       push("ott_playback_errors_total", labels, counters["errors" + JSON.stringify(labels)]);
-      for (const [type, n] of Object.entries(row.errorsByType)) {
-        const l2 = { ...labels, error_type: type };
-        cum("errors_t", l2).add(n);
-        push("ott_playback_errors_by_type_total", l2, counters["errors_t" + JSON.stringify(l2)]);
+      if (cardinality !== "cloud") {
+        for (const [type, n] of Object.entries(row.errorsByType)) {
+          const l2 = { ...labels, error_type: type };
+          cum("errors_t", l2).add(n);
+          push("ott_playback_errors_by_type_total", l2, counters["errors_t" + JSON.stringify(l2)]);
+        }
       }
       cum("watch", labels).add(row.watchSeconds);
       push("ott_watch_seconds_total", labels, counters["watch" + JSON.stringify(labels)]);
       cum("rebuffer", labels).add(row.rebufferSeconds);
       push("ott_rebuffer_seconds_total", labels, counters["rebuffer" + JSON.stringify(labels)]);
       push("ott_delivered_bitrate_kbps", labels, row.bitrate);
+    }
+    if (cardinality === "cloud") {
+      // SIM_CARDINALITY=cloud: drop the platform dimension from the by-type
+      // error breakdown — 30 slices x ~6 types (~180 series) collapses to
+      // 6 regions x ~6 types (~36 series). Every other family is untouched,
+      // so error composition evidence (the diagnose phase's key signal)
+      // stays queryable, just one label narrower. Full arc stays far below
+      // the Grafana Cloud free tier's 10k active-series cap.
+      const byType = {};
+      for (const row of region.rows)
+        for (const [type, n] of Object.entries(row.errorsByType))
+          byType[type] = (byType[type] || 0) + n;
+      for (const [type, n] of Object.entries(byType)) {
+        const l2 = { region: region.name, error_type: type };
+        cum("errors_t", l2).add(n);
+        push("ott_playback_errors_by_type_total", l2, counters["errors_t" + JSON.stringify(l2)]);
+      }
     }
   }
 

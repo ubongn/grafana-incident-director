@@ -117,9 +117,19 @@ export function buildLogLines(state) {
     });
   }
 
-  return lines;
+  return withSimTags(lines);
 }
 
 function jitter(rnd, lo, hi) {
   return lo + rnd() * (hi - lo);
+}
+
+// Loki stream tags applied to EVERY line this simulator pushes, so a judge
+// (or the agent) can isolate the simulation with one label selector:
+//   {job="incident-director", source="sim"}
+export function withSimTags(lines) {
+  return lines.map((l) => ({
+    ...l,
+    stream: { job: "incident-director", source: "sim", ...l.stream },
+  }));
 }

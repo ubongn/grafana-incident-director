@@ -9,7 +9,7 @@ import http from "node:http";
 import { SCENARIOS, ScenarioInstance, listScenarios } from "./scenarios.js";
 import { REMEDIATIONS, applyRemediation } from "./remediation.js";
 
-export function startControlServer({ port, active, simRef }) {
+export function startControlServer({ port, active, simRef, stats = null }) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, "http://localhost");
     const send = (code, obj) => {
@@ -87,6 +87,16 @@ export function startControlServer({ port, active, simRef }) {
         suppressed: active
           .filter((s) => s.suppression)
           .map((s) => ({ id: s.id, name: s.name, appliedAt: new Date(s.suppression.appliedAt).toISOString() })),
+      });
+    }
+
+    // push-layer health: series cardinality per tick, ok/fail counters, endpoints
+    if (req.method === "GET" && url.pathname === "/stats") {
+      if (!stats) return send(404, { error: "stats not wired" });
+      return send(200, {
+        ok: stats.promFail === 0 && stats.lokiFail === 0,
+        tick: simRef.tick,
+        ...stats,
       });
     }
 
