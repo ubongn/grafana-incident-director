@@ -6,6 +6,7 @@ import { computeTick, buildSamples } from "./metrics.js";
 import { buildLogLines } from "./logs.js";
 import { makePromPusher, makeLokiPusher } from "./push.js";
 import { startControlServer } from "./control.js";
+import { takeEvidenceLines } from "./remediation.js";
 
 const env = (k, d) => process.env[k] || d;
 const PROM_URL = env("PROMETHEUS_REMOTE_WRITE_URL", "http://localhost:9090/api/v1/write");
@@ -27,7 +28,7 @@ async function tickOnce() {
   const nowMs = Date.now();
   const state = computeTick({ tick: simRef.tick, nowMs, active });
   const samples = buildSamples(state, counters);
-  const lines = buildLogLines(state);
+  const lines = [...buildLogLines(state), ...takeEvidenceLines()];
 
   try {
     const r = await promPush(samples);

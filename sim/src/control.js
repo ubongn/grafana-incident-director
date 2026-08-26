@@ -7,6 +7,7 @@
 
 import http from "node:http";
 import { SCENARIOS, ScenarioInstance, listScenarios } from "./scenarios.js";
+import { REMEDIATIONS, applyRemediation } from "./remediation.js";
 
 export function startControlServer({ port, active, simRef }) {
   const server = http.createServer((req, res) => {
@@ -63,6 +64,30 @@ export function startControlServer({ port, active, simRef }) {
         }
       });
       return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/remediate") {
+      let body = "";
+      req.on("data", (c) => (body += c));
+      req.on("end", () => {
+        try {
+          const payload = JSON.parse(body || "{}");
+          const result = applyRemediation(payload, active);
+          send(result.status, result.body);
+        } catch (e) {
+          send(400, { error: String(e) });
+        }
+      });
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/remediations") {
+      return send(200, {
+        available: Object.keys(REMEDIATIONS),
+        suppressed: active
+          .filter((s) => s.suppression)
+          .map((s) => ({ id: s.id, name: s.name, appliedAt: new Date(s.suppression.appliedAt).toISOString() })),
+      });
     }
 
     send(404, { error: "not found" });

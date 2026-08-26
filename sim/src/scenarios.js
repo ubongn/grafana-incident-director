@@ -15,10 +15,24 @@ export class ScenarioInstance {
     this.params = { ...(def.defaults || {}), ...params };
     this.startedMs = startedMs;
     this.stoppedMs = null;
+    this.suppression = null; // {appliedAt, tauSeconds} — remediation decay
   }
 
+  // Effective age in seconds. Under remediation the age is compressed so the
+  // fault intensity k decays exponentially (see sim/src/remediation.js).
   ageSeconds(nowMs) {
-    return (nowMs - this.startedMs) / 1000;
+    let age = (nowMs - this.startedMs) / 1000;
+    if (this.suppression) {
+      const ramp = this.def.rampSeconds || 60;
+      const k = Math.min(1, Math.max(0, age) / ramp);
+      const decay = Math.exp(-((nowMs - this.suppression.appliedAt) / 1000) / this.suppression.tauSeconds);
+      age = ramp * k * decay;
+    }
+    return age;
+  }
+
+  suppress(nowMs, tauSeconds) {
+    this.suppression = { appliedAt: nowMs, tauSeconds };
   }
 }
 
@@ -30,6 +44,7 @@ function profile(ageSec, rampSeconds) {
 
 export const SCENARIOS = {
   "cdn-edge-degraded": {
+    rampSeconds: 60,
     title: "CDN edge degraded (upstream fetch timeouts)",
     doc: "One CDN edge's upstream fetches time out; latency spikes and segment errors concentrate in the region it serves. Correct response: drain the edge / shift traffic, then verify recovery.",
     defaults: { edge: "cdn-fra1" },
@@ -50,6 +65,7 @@ export const SCENARIOS = {
   },
 
   "origin-5xx": {
+    rampSeconds: 45,
     title: "Origin 5xx (dependency timeout)",
     doc: "Primary origin starts returning 503s from a packaging dependency. ALL regions degrade (origin is behind every edge) while CDN edge health stays normal — the discriminator. Correct response: fail over to origin-b, then verify.",
     defaults: { origin: "origin-a" },
@@ -69,6 +85,7 @@ export const SCENARIOS = {
   },
 
   "drm-license-outage": {
+    rampSeconds: 40,
     title: "DRM license provider outage",
     doc: "External license provider fails: license errors spike uniformly across ALL regions and platforms while CDN, origin and packaging stay pristine. Correct response: switch to the secondary license endpoint — not a CDN/origin action.",
     defaults: {},
@@ -79,6 +96,7 @@ export const SCENARIOS = {
   },
 
   "transcoder-backlog": {
+    rampSeconds: 90,
     title: "Transcoder backlog (ingest surge)",
     doc: "Ingest surge floods packaging: queue depth and lag climb, frames drop, newly ingested assets fail manifest fetches. Correct response: route ingest to the burst pool / throttle low-priority ingest, then verify lag recovery.",
     defaults: {},
@@ -96,6 +114,7 @@ export const SCENARIOS = {
   },
 
   "regional-isp-degradation": {
+    rampSeconds: 50,
     title: "Regional ISP degradation (client network)",
     doc: "One ISP path into one region degrades: rebuffering and segment timeouts hit only that region's cohort while CDN edges and origins stay healthy. Correct response: tighten ABR floor for the affected cohort and file ISP escalation — do not touch CDN/origin.",
     defaults: { region: "us-east", platform: "android" },
@@ -112,6 +131,7 @@ export const SCENARIOS = {
   },
 
   "traffic-spike": {
+    rampSeconds: 90,
     title: "Benign traffic spike (NO-ACTION trap)",
     doc: "A live event drives sessions up ~60%. Error rate, rebuffer, origin and CDN health all stay within budget — this is load, not an incident. Correct response: explicitly DO NOTHING (log a note, no remediation).",
     defaults: {},
