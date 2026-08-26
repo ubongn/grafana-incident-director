@@ -1,0 +1,19 @@
+{
+  "name": "ott-telemetry-sim",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Netflix-scale-believable OTT streaming telemetry simulator with deterministic fault injection. Remote-writes Prometheus metrics and pushes Loki logs for the Grafana Incident Director agent.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0",
+    "prometheus-remote-write": "^0.5.1"
+  }
+}
