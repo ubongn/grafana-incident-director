@@ -97,7 +97,9 @@ A Linux/docker-compose path ships with the hosted-demo milestone.
 The demo runs against a real **Grafana Cloud** stack — the same agent code, the
 same runbook, cloud data:
 
-**Stack:** <https://olivetiramisu3480.grafana.net> · **Dashboard:** <https://olivetiramisu3480.grafana.net/d/ott-streaming-ops> (OTT Streaming Operations, 15 panels)
+**Judge dashboard (no login):** <https://olivetiramisu3480.grafana.net/public-dashboards/10d81eda6d4d40058f07ad8b8b0f126a> — Public share (read-only), OTT Streaming Operations, 15 panels, live sim data
+
+**Internal stack:** <https://olivetiramisu3480.grafana.net> (login) · full dashboard <https://olivetiramisu3480.grafana.net/d/ott-streaming-ops> (OTT Streaming Operations, 15 panels)
 
 **What runs where**
 
