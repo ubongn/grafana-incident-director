@@ -24,7 +24,7 @@
 | 3 | **Vertex probe OK** (model path healthy) | `python scripts\vertex_probe.py` | REST `200` for `gemini-2.5-flash` (the agent's model) |
 | 4 | creds staged | `grafana-cloud-creds.txt` + `vertex-key.json` one level above the repo (workspace root) | both files exist (never committed) |
 
-**Status as of 2026-08-27 ~11:54 UTC (verified post-M3):** sim alive — 30 series, Loki tick 11:53:56Z; full E2E arc already captured unattended (see transcript).
+**Status as of 2026-08-27 ~11:54 UTC (verified post-M3):** sim alive — 30 series, Loki tick 11:53:56Z; full E2E arc already captured unattended (see transcript). **Re-verified + re-run live 14:31–14:37 UTC** (manager-witnessed): FIRING 241.7 s, DETECT→REPORT ≈45.9 s, gate held, audit chain OK — timings above are representative, brew can land 200–245 s.
 
 ### If the sim is dead (check 1 fails: 0 series / stale ts)
 
@@ -78,7 +78,7 @@ The alert needs **~3.3 min** to fire after injection (`for: 3m` + eval interval)
 1. **Public dashboard** (incognito!) — 15 panels, live sim data moving. Punchline: *"this exact URL is in the README — no login, judges, go click it."*
 2. **Agent terminal** — the one command, then the phase lines: `[detect] → [triangulate] → [diagnose] → [remediate] → [gate] → [report]`. Read the TRIANGULATE line out loud (real ms/percentages from cloud PromQL).
 3. **The gate refusal** — *"unattended mode: execution requires an interactive human approval."* The agent diagnosed in 47 s and **still didn't touch production** — that's the framework-enforced approval gate.
-4. **The annotation landing** — after `[report]`, refresh the public dashboard: the incident annotation the agent posted is now on the panel timeline. The loop closes *inside Grafana*.
+4. **The annotation landing** — after `[report]`, open the **internal** dashboard (`https://olivetiramisu3480.grafana.net/d/ott-streaming-ops`, login): the incident annotation the agent posted is on the panel timeline (tag `incident-director`). NB: **public shares don't render annotations** (Grafana 13 strips the annotations layer from shared dashboards — verified live 2026-08-27; on the public URL the arc shows through its data footprint: the latency spike in the panels).
 5. Optional closer: `docs/cloud-arc-transcript.md` + the hash-chained `audit/audit-*.jsonl` — the evidence chain for skeptics.
 
 ---

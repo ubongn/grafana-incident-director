@@ -78,7 +78,34 @@ deploy\start-sim-cloud-background.cmd   # keep-alive sim -> hosted Prometheus/Lo
 deploy\run-cloud-arc.cmd                # one full unattended arc (Vertex AI)
 ```
 
+## Live-demo re-run — run-20260827-163604-9fe96b (2026-08-27 14:31 UTC, manager-witnessed)
+
+> Second full cloud arc, same scenario class (`cdn-edge-degraded`), executed live while the public judge dashboard was being watched. Pre-flight verified green before launch: sim alive (30 series, fresh Loki tick), public dashboard HTTP 200, `vertex_probe` 200 on `gemini-2.5-flash`, all 5 SLO rules Normal, `.env` seam `AI_PROVIDER=vertex`. An **independent MCP poller** (own stdio session to `mcp-grafana` v1.2.0, `alerting_manage_rules` operation=list every 15 s) ran alongside the harness to confirm alert state transitions without trusting the harness's word.
+
+| t (UTC) | Phase | Wall time | MCP tools | What happened |
+|---|---|---|---|---|
+| 14:31:58 | LAUNCH | — | — | `deploy\run-cloud-arc.cmd` (Vertex pinned: `AI_PROVIDER=vertex`, `gemini-2.5-flash` @ us-central1, `DEMO_MODE=1`) |
+| ~14:32:02 | INJECT | — | — | Scenario `cdn-edge-degraded` (`sc-004`) injected; poller + harness timers aligned |
+| 14:32:59 | ALERT Pending | t+60 s | (poller) | Rule crosses threshold → `pending` (independent MCP poll) |
+| **14:36:01** | **ALERT FIRING** | **241.7 s** | (poller) | **FIRING confirmed via MCP t+241.9 s — harness measured inject→FIRING 241.7 s** (~4 min brew; M3 was 200.9 s — rule eval cadence phase) |
+| 14:36:04 | ARC START | — | — | Trigger: firing alert; gate pre-forced to `refuse_unattended` |
+| | DETECT | **4.56 s** | `alerting_manage_rules` | Isolates the one firing rule out of 5 |
+| | TRIANGULATE | **13.67 s** | `get_dashboard_panel_queries` ×5, `query_prometheus` | **scope=regional eu-west**: `cdn-fra1` latency **1620.58 ms**, 5xx **3.75 %**, playback errors **2.05 %**; everything else healthy |
+| | DIAGNOSE | **15.52 s** | `find_error_pattern_logs` ×2, `query_loki_logs` | Upstream fetch timeouts → 504s → **conf 0.9** |
+| | REMEDIATE | **3.62 s** | *(none — by design)* | Full `drain_cdn_edge {"edge": "cdn-fra1"}` proposal with effect/risk/rollback/rationale |
+| 14:36:41 | GATE | ~0 s | — | **`approved=false` · `decided_by=mode:refuse_unattended`** — gate held, no execution |
+| | REPORT | **8.41 s** | `create_annotation`, `query_prometheus` | **Annotation id=2 posted at 14:36:45Z**; verification query honestly reports latency **2025 ms persists** (remediation denied) |
+
+**Totals:** DETECT→proposal **37.43 s** · DETECT→REPORT **≈45.9 s** · every phase `attempts: 1` · outcome `denied` (expected). Two transient MCP tool errors (`"now"` time-unmarshal; one 5 s tool timeout) were absorbed by tool-level retry — **zero phase retries**. Audit chain after the run: **OK — 18 entries, chain intact** (`audit/audit-20260827.jsonl`; this run is hash-chained onto the morning's M3 run in the same file).
+
+**Downstream symptom (the "playback error spike" class):** Grafana's own state annotations show `ott-playback-errors` (SLO, `for: 2m`) went **Pending at 14:36:20Z** — the CDN fault propagated to player errors exactly as the runbook says, and resolved with the scenario (`ott-edge-latency` back to **Normal at 14:37:00Z**, all 5 rules Normal post-arc, sim untouched and still feeding).
+
+**Data footprint (what the public dashboard shows):** hosted Prometheus (the panels' datasource) shows `cdn-fra1` p95 ~**2259 ms at 14:34:00Z** vs ~100 ms baseline, recovering at 14:37:00Z — the spike is inside the public dashboard's default 30-min window.
+
+**Public-dashboard annotation caveat (verified live):** Grafana 13 public shares strip the annotations layer — the shared model ships without the `annotations` field and `/api/public/dashboards/{uid}/annotations` returns `[]` anonymously (both annotations, 24 h window). The agent's annotation (id=2, tags `incident-director`, author `sa-1-mcp-agent`, dashboard `ott-streaming-ops`) is real and visible on the **internal** dashboard + via the annotations API; on the public share, the arc is visible through its live data footprint. `docs/demo-day.md` shot list updated accordingly.
+
 ## History
 
 - **2026-08-26** — arcs 1–2 vs cloud: DETECT proven E2E, then killed by AI Studio free-tier 429 (`RESOURCE_EXHAUSTED`, 20 req/day/model). Root-caused and documented in the prior revision of this file.
 - **2026-08-27** — provider seam switched to Vertex AI (`AI_PROVIDER=vertex`, gemini-2.5-flash GA there; 3.6 is AI-Studio-only). **Complete arc above — the quota blocker is gone.**
+- **2026-08-27 (14:31 UTC)** — **live-demo re-run** (section above): same scenario, manager-witnessed while the public dashboard was being watched. FIRING 241.7 s (independently confirmed via MCP poller), DETECT→REPORT ≈45.9 s, gate held, annotation id=2, audit chain OK (18 entries). Found + documented the public-share annotation limitation.
