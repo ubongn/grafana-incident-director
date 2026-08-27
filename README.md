@@ -64,7 +64,7 @@ flowchart LR
 ```
 
 - **`plugin/`** — Grafana app plugin (frontend): the Incident Director lives as a page inside Grafana. Light theme, mobile-responsive, SVG iconography.
-- **`agent/`** — the deterministic runbook engine. Each step is a typed stage with explicit inputs/outputs; Gemini is called with **structured evidence bundles** (never vibes), behind a swappable model-provider layer (Gemini API today, **Vertex AI at submission** — see `agent/src/models/`).
+- **`agent/`** — the deterministic runbook engine. Each step is a typed stage with explicit inputs/outputs; Gemini is called with **structured evidence bundles** (never vibes), behind a swappable model-provider layer (Vertex AI for cloud/demo, AI Studio key for local dev — see `.env.example`).
 - **`sim/`** — Netflix-scale-believable OTT telemetry simulator (viewer sessions, playback errors, CDN edges, origin, transcoders) pushing to Prometheus remote-write + Loki, with a scenario engine for deterministic fault injection (the demo's "inject synthetic playback failures" lever).
 - **`deploy/`** — run-anywhere configs: Windows binaries today, `docker-compose.yml` for the hosted demo.
 
@@ -106,7 +106,9 @@ same runbook, cloud data:
 | OTT telemetry simulator | local (detached background process) | remote-writes metrics to hosted Prometheus, pushes logs to hosted Loki; `SIM_CARDINALITY=cloud` keeps it inside the free tier |
 | Prometheus + Loki | Grafana Cloud (hosted) | sim is the only tenant |
 | Dashboard + 5 SLO alert rules | Grafana Cloud | provisioned by `deploy/provision_cloud.py` (idempotent API push) |
-| Incident Director agent | local | talks to the cloud stack **exclusively through the Grafana MCP server** (`mcp-grafana`) with a service-account token |
+| Incident Director agent | local | talks to the cloud stack **exclusively through the Grafana MCP server** (`mcp-grafana`) with a service-account token; model calls run on **Vertex AI (Gemini)** |
+
+The agent's Gemini calls run on **Vertex AI** (service-account ADC, `AI_PROVIDER=vertex` in `.env`) — billed trial credits, so unattended arcs don't hit the AI Studio free-tier 20 req/day cap. The AI Studio key stays as the local-dev fallback (`AI_PROVIDER=gemini`).
 
 **Agent-vs-cloud, end to end:** [`docs/cloud-arc-transcript.md`](docs/cloud-arc-transcript.md) is a captured, unattended run — fault injected into the sim → alert fires in cloud Grafana → the agent detects via MCP, triangulates with cloud PromQL, diagnoses with cloud Loki logs, proposes remediation (approval-gated), and reports. Reproduce it:
 
