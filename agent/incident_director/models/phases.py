@@ -127,3 +127,6 @@ class PhaseRecord(BaseModel):
     tool_calls: list[str] = Field(default_factory=list)
     attempts: int = 1
     error: str = ""
+    # model usage actually reported by the transport, summed over the
+    # phase's model turns: {prompt, candidates, thoughts, total}
+    usage: dict = Field(default_factory=dict)

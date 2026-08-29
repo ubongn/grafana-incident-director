@@ -29,8 +29,11 @@ def _cmd_run(args: argparse.Namespace) -> int:
         if args.scenario:
             result, _ = await run_scenario_once(args.scenario, json.loads(args.params or "{}"))
         else:
-            arc, _ = build_arc(verbose=True)
+            arc, settings = build_arc(verbose=True)
             result = await arc.run("alert", "Operator asked for an assessment of current alert state.")
+            from .telemetry import emit_run
+
+            emit_run(result, {"scenario": "manual"}, settings)
         if result.report and result.report.markdown:
             print("\n" + "=" * 62 + "\nINCIDENT REPORT\n" + "=" * 62)
             print(result.report.markdown)

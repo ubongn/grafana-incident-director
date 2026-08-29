@@ -1,0 +1,253 @@
+{
+  "uid": "agent-observability",
+  "title": "Incident Director — Agent Observability",
+  "description": "The agent observes the platform; this dashboard observes the agent. Phase timings, tool usage, model tokens and estimated cost for every incident arc the Incident Director runs, plus the gate decisions it took. Metrics and run events are published by the agent itself (agent/incident_director/telemetry.py) to the same hosted Prometheus/Loki it operates on.",
+  "tags": ["incident-director", "ai-observability", "agent"],
+  "schemaVersion": 4100,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {
+    "refresh_intervals": ["10s", "30s", "1m", "5m"]
+  },
+  "panels": [
+    {
+      "id": 200,
+      "type": "timeseries",
+      "title": "Runbook phase durations (per arc)",
+      "gridPos": { "x": 0, "y": 0, "w": 14, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "incident_director_phase_seconds{job=\"incident-director\"}",
+          "legendFormat": "{{phase}}",
+          "datasource": { "type": "prometheus", "uid": "prom-ott" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "showPoints": "always",
+            "pointSize": 5,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"] },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 201,
+      "type": "stat",
+      "title": "Detect → proposal",
+      "description": "Last arc: seconds from firing alert to remediation proposal.",
+      "gridPos": { "x": 14, "y": 0, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "incident_director_detect_to_proposal_seconds{job=\"incident-director\"}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 120 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 202,
+      "type": "stat",
+      "title": "Detect → report",
+      "description": "Last arc: seconds from firing alert to report written back to Grafana.",
+      "gridPos": { "x": 19, "y": 0, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "incident_director_detect_to_report_seconds{job=\"incident-director\"}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 1,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 90 },
+              { "color": "red", "value": 180 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 203,
+      "type": "stat",
+      "title": "Alert brew (inject → firing)",
+      "description": "How long the injected fault took to trip the SLO alert (for: 3m + eval interval).",
+      "gridPos": { "x": 14, "y": 4, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "incident_director_alert_brew_seconds{job=\"incident-director\"}", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "decimals": 0 },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 204,
+      "type": "stat",
+      "title": "Arcs completed (24h)",
+      "gridPos": { "x": 19, "y": 4, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "sum(sum_over_time(incident_director_run_outcome{job=\"incident-director\"}[24h]))", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 205,
+      "type": "timeseries",
+      "title": "Model tokens by direction (per phase-arc)",
+      "description": "Reported by the transport: prompt, candidates (output) and thoughts (reasoning) tokens, summed per phase turn.",
+      "gridPos": { "x": 0, "y": 8, "w": 14, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (direction) (incident_director_model_tokens{job=\"incident-director\"})",
+          "legendFormat": "{{direction}}",
+          "datasource": { "type": "prometheus", "uid": "prom-ott" }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 70,
+            "showPoints": "never",
+            "stacking": { "mode": "normal", "group": "A" }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["sum"] },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 206,
+      "type": "stat",
+      "title": "Est. model spend (24h)",
+      "description": "List-price estimate (Gemini 2.5 Flash, Vertex published rates; thoughts billed as output). Labeled pricing travels with the metric — this is not a bill.",
+      "gridPos": { "x": 14, "y": 8, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "sum(sum_over_time(incident_director_model_cost_usd{job=\"incident-director\"}[24h]))", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 4 },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "area"
+      }
+    },
+    {
+      "id": 207,
+      "type": "stat",
+      "title": "Gate decisions (24h)",
+      "description": "Every arc passes the human-approval gate. Unattended runs are refused by design — execution requires an interactive human.",
+      "gridPos": { "x": 19, "y": 8, "w": 5, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prom-ott" },
+      "targets": [
+        { "refId": "A", "expr": "sum by (decision) (sum_over_time(incident_director_gate_decision{job=\"incident-director\"}[24h]))", "datasource": { "type": "prometheus", "uid": "prom-ott" } }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      }
+    },
+    {
+      "id": 208,
+      "type": "logs",
+      "title": "Run events (agent → Loki)",
+      "description": "One structured line per completed arc: outcome, phase timings, gate decision, tokens, estimated cost.",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "loki-ott" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"incident-director\", source=\"agent\"}",
+          "datasource": { "type": "loki", "uid": "loki-ott" }
+        }
+      ],
+      "options": {
+        "sortOrder": "Descending",
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none"
+      }
+    }
+  ]
+}

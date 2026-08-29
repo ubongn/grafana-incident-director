@@ -24,6 +24,11 @@ class PhaseOutput:
     text: str = ""
     tool_calls: list[str] = field(default_factory=list)
     tool_traces: list[dict] = field(default_factory=list)  # {name, args} for audit
+    # Sum of per-turn usage_metadata across the phase's model turns (ADK
+    # attaches genai UsageMetadata to model-response events). Best-effort:
+    # stays empty on transports that do not report usage.
+    usage: dict = field(default_factory=dict)  # {prompt, candidates, thoughts, total}
+    model_version: str = ""
 
 
 def _event_text(event) -> str:
@@ -48,6 +53,23 @@ async def run_phase_agent(
 
     out = PhaseOutput()
 
+    def _add_usage(u) -> None:
+        if u is None:
+            return
+        for src, dst in (
+            ("prompt_token_count", "prompt"),
+            ("candidates_token_count", "candidates"),
+            ("thoughts_token_count", "thoughts"),
+            ("total_token_count", "total"),
+        ):
+            n = getattr(u, src, None)
+            if isinstance(n, int):
+                out.usage[dst] = out.usage.get(dst, 0) + n
+        if not out.model_version:
+            mv = getattr(u, "model_version", None)  # not on UsageMetadata; harmless
+            if isinstance(mv, str) and mv:
+                out.model_version = mv
+
     async def consume() -> None:
         async for event in runner.run_async(
             user_id=USER_ID, session_id=session.id, new_message=message
@@ -61,10 +83,14 @@ async def run_phase_agent(
                 if not out.tool_calls or resp.name != out.tool_calls[-1]:
                     out.tool_calls.append(resp.name)
                     out.tool_traces.append({"name": resp.name, "args": None})
+            _add_usage(getattr(event, "usage_metadata", None))
             if event.is_final_response():
                 text = _event_text(event)
                 if text:
                     out.text = text
+                mv = getattr(event, "model_version", None)
+                if isinstance(mv, str) and mv:
+                    out.model_version = mv
 
     try:
         await asyncio.wait_for(consume(), timeout=timeout_s)

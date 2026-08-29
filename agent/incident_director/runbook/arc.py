@@ -140,6 +140,7 @@ class IncidentArc:
                 seconds=round(time.monotonic() - t0, 2),
                 tool_calls=output.tool_calls,
                 attempts=attempt,
+                usage=output.usage,
             )
             if require_tools and not output.tool_calls:
                 last_error = "no Grafana MCP tool calls made"
@@ -167,6 +168,7 @@ class IncidentArc:
             attempts=record.attempts,
             tool_calls=record.tool_calls,
             error=record.error,
+            usage=record.usage,
         )
         return result, record
 

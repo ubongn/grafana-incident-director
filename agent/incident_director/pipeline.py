@@ -103,6 +103,9 @@ async def run_scenario_once(
             result = await arc.run("operator_report", OPERATOR_PROMPTS[scenario])
 
         meta["outcome"] = result.outcome
+        from .telemetry import emit_run  # late import: telemetry must never break the arc
+
+        emit_run(result, meta, settings, verbose=True)  # the telemetry line is demo material
         return result, meta
     finally:
         if auto_stop:

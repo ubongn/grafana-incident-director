@@ -156,6 +156,17 @@ def main() -> int:
         r.raise_for_status()
         print(f"dashboard '{dash['title']}' -> uid {dash['uid']} url {url}/d/{dash['uid']}")
 
+        # --- agent self-observability dashboard (same folder, same uids) ---
+        obs_path = REPO / "deploy/grafana/dashboards/agent-observability.json"
+        obs = json.loads(obs_path.read_text())
+        r = c.post(
+            "/api/dashboards/db",
+            json={"dashboard": obs, "folderUid": folder["uid"], "overwrite": True,
+                  "message": "provisioned by provision_cloud.py (agent-observability)"},
+        )
+        r.raise_for_status()
+        print(f"dashboard '{obs['title']}' -> uid {obs['uid']} url {url}/d/{obs['uid']}")
+
         # --- alert rules (delete+repost keeps this idempotent on re-runs) ---
         spec = yaml.safe_load(
             (REPO / "deploy/grafana/provisioning/alerting/ott-core-slo.yml").read_text()
