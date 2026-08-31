@@ -1,8 +1,8 @@
 # Grafana Incident Director
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Grafana](https://img.shields.io/badge/Grafana-%3E%3D11-orange)](https://grafana.com)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-3.6%20Flash-4285F4)](https://ai.google.dev)
+[![Grafana](https://img.shields.io/badge/Grafana-Cloud-orange)](https://grafana.com)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash%20%C2%B7%20Vertex%20AI-4285F4)](https://ai.google.dev)
 [![Status](https://img.shields.io/badge/status-building%20for%20Agentic%20Cinema%20Hackathon-brightgreen)](#roadmap)
 
 > An autonomous incident-direction agent that lives **inside Grafana** and runs
@@ -11,7 +11,7 @@
 > backed by an evidence chain of real Grafana queries and Loki log lines.
 
 **Grafana now does incident direction.** Not a sidecar dashboard, not an external
-poller — an app plugin where an agent (powered by Google Gemini) investigates
+poller— an agent built on **Google ADK** (Gemini 2.5 Flash on Vertex AI) whose **only hands are the Grafana MCP server** (`mcp-grafana`): it investigates
 live streaming telemetry, narrows the blast radius, cites the exact PromQL and
 log lines that prove the root cause, executes playbook remediations, writes the
 story back into Grafana as annotations and panels, and publishes a postmortem
