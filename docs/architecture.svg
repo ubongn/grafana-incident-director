@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 920" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+  <!-- ============================================================ -->
+  <!-- Grafana Incident Director — architecture (light theme)       -->
+  <!-- Hand-authored SVG; fictional platform: StreamFiction.        -->
+  <!-- ============================================================ -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3a3a3a"/>
+    </marker>
+    <marker id="arrowData" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7a7a7a"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="920" fill="#fafafa"/>
+  <text x="60" y="66" font-size="30" font-weight="700" fill="#161616">Grafana Incident Director — architecture</text>
+  <text x="60" y="96" font-size="16" fill="#5a5a5a">An autonomous incident runbook inside the Grafana stack · one Gemini-powered agent per phase · every stack call through the Grafana MCP server</text>
+
+  <!-- ================= LOCAL: simulator + agent runtime ============ -->
+  <rect x="40" y="130" width="460" height="300" rx="10" fill="#ffffff" stroke="#d8d8d8"/>
+  <text x="60" y="158" font-size="13" font-weight="700" fill="#8a8a8a" letter-spacing="1.5">LOCAL RUNTIME</text>
+
+  <!-- Simulator -->
+  <rect x="60" y="175" width="420" height="110" rx="8" fill="#f4f7ff" stroke="#b9c8ee"/>
+  <text x="80" y="203" font-size="17" font-weight="700" fill="#1c2d5a">StreamFiction OTT simulator</text>
+  <text x="80" y="226" font-size="13" fill="#44507a">2.1M sessions · 6 regions · 5 platforms · 6 fault scenarios</text>
+  <text x="80" y="246" font-size="13" fill="#44507a">deterministic faults (CDN edge, origin 5xx, DRM, …)</text>
+  <text x="80" y="266" font-size="13" fill="#44507a">incl. one benign traffic spike — the NO-ACTION trap</text>
+
+  <!-- Agent -->
+  <rect x="60" y="300" width="420" height="110" rx="8" fill="#fff8f2" stroke="#eec5a0"/>
+  <text x="80" y="328" font-size="17" font-weight="700" fill="#7a4310">Incident Director agent</text>
+  <text x="80" y="351" font-size="13" fill="#8a5a28">Google ADK (Python) · deterministic 5-phase runbook</text>
+  <text x="80" y="371" font-size="13" fill="#8a5a28">hash-chained audit trail · graded eval matrix</text>
+  <text x="80" y="391" font-size="13" fill="#8a5a28">self-instruments its own cost and latency</text>
+
+  <!-- ================= GOOGLE CLOUD bracket ======================== -->
+  <rect x="540" y="130" width="330" height="300" rx="10" fill="#ffffff" stroke="#c5d8f1"/>
+  <text x="560" y="158" font-size="13" font-weight="700" fill="#3a6ea5" letter-spacing="1.5">GOOGLE CLOUD</text>
+  <rect x="560" y="175" width="290" height="235" rx="8" fill="#f2f7fd" stroke="#b9d0ec"/>
+  <text x="580" y="205" font-size="17" font-weight="700" fill="#1c3d5a">Gemini on Vertex AI</text>
+  <text x="580" y="228" font-size="13" fill="#3d5a77">gemini-2.5-flash · us-central1</text>
+  <text x="580" y="248" font-size="13" fill="#3d5a77">one ADK LlmAgent per runbook phase</text>
+  <text x="580" y="268" font-size="13" fill="#3d5a77">temperature 0 · structured JSON output</text>
+  <!-- phase chips -->
+  <g font-size="12" font-weight="700" text-anchor="middle">
+    <rect x="578" y="290" width="76" height="26" rx="13" fill="#e8f0e4" stroke="#9dbb8f"/><text x="616" y="308" fill="#33502a">DETECT</text>
+    <rect x="662" y="290" width="110" height="26" rx="13" fill="#fdf3e0" stroke="#e0bd7a"/><text x="717" y="308" fill="#7a5a1a">TRIANGULATE</text>
+    <rect x="578" y="326" width="96" height="26" rx="13" fill="#fdeae4" stroke="#e0a08a"/><text x="626" y="344" fill="#7a3a24">DIAGNOSE</text>
+    <rect x="684" y="326" width="104" height="26" rx="13" fill="#efe6f7" stroke="#b79ad8"/><text x="736" y="344" fill="#4a2e6a">REMEDIATE</text>
+    <rect x="578" y="362" width="80" height="26" rx="13" fill="#e2eef7" stroke="#8fb4cf"/><text x="618" y="380" fill="#23485f">REPORT</text>
+  </g>
+  <text x="580" y="400" font-size="12" fill="#6a7a8a">evidence-first: every phase must cite</text>
+  <text x="580" y="416" font-size="12" fill="#6a7a8a">its PromQL / LogQL before concluding</text>
+
+  <!-- ================= GRAFANA MCP layer ========================== -->
+  <rect x="540" y="470" width="330" height="170" rx="10" fill="#ffffff" stroke="#f0b36b"/>
+  <text x="560" y="498" font-size="13" font-weight="700" fill="#c05f0a" letter-spacing="1.5">GRAFANA MCP SERVER</text>
+  <rect x="560" y="512" width="290" height="108" rx="8" fill="#fff6ec" stroke="#f0c99a"/>
+  <text x="580" y="538" font-size="15" font-weight="700" fill="#8a4a10">mcp-grafana v1.2 (stdio)</text>
+  <text x="580" y="560" font-size="12.5" fill="#8a5a28">alerting_manage_rules · query_prometheus</text>
+  <text x="580" y="578" font-size="12.5" fill="#8a5a28">get_dashboard_panel_queries · query_loki_logs</text>
+  <text x="580" y="596" font-size="12.5" fill="#8a5a28">create_annotation · service-account auth</text>
+  <text x="580" y="614" font-size="12" font-style="italic" fill="#a06a30">the only path from agent to stack</text>
+
+  <!-- ================= GRAFANA CLOUD stack ======================== -->
+  <rect x="950" y="130" width="610" height="510" rx="10" fill="#ffffff" stroke="#e0d3f0"/>
+  <text x="970" y="158" font-size="13" font-weight="700" fill="#7a4fa0" letter-spacing="1.5">GRAFANA CLOUD (hosted stack)</text>
+
+  <!-- datasources -->
+  <rect x="970" y="175" width="270" height="120" rx="8" fill="#f6f2fb" stroke="#cbb5e4"/>
+  <text x="990" y="203" font-size="16" font-weight="700" fill="#4a2e6a">Hosted Prometheus</text>
+  <text x="990" y="226" font-size="12.5" fill="#5a4472">SLO metrics · remote-write from simulator</text>
+  <text x="990" y="245" font-size="12.5" fill="#5a4472">5 alert rules (p95 latency, 5xx, rebuffer, …)</text>
+  <text x="990" y="264" font-size="12.5" fill="#5a4472">agent reads live state via PromQL</text>
+  <text x="990" y="286" font-size="12" font-style="italic" fill="#7a5a96">datasource uid: prom-ott</text>
+
+  <rect x="1270" y="175" width="270" height="120" rx="8" fill="#f6f2fb" stroke="#cbb5e4"/>
+  <text x="1290" y="203" font-size="16" font-weight="700" fill="#4a2e6a">Hosted Loki</text>
+  <text x="1290" y="226" font-size="12.5" fill="#5a4472">segment fetch logs · 504 / timeout evidence</text>
+  <text x="1290" y="245" font-size="12.5" fill="#5a4472">agent grounds root cause in LogQL</text>
+  <text x="1290" y="264" font-size="12.5" fill="#5a4472">+ agent run-event stream (self-telemetry)</text>
+  <text x="1290" y="286" font-size="12" font-style="italic" fill="#7a5a96">datasource uid: loki-ott</text>
+
+  <!-- dashboards -->
+  <rect x="970" y="315" width="270" height="150" rx="8" fill="#f2fbf4" stroke="#9ccfa8"/>
+  <text x="990" y="343" font-size="16" font-weight="700" fill="#1e5631">OTT Streaming Operations</text>
+  <text x="990" y="366" font-size="12.5" fill="#2e6a42">15-panel SLO dashboard (public share)</text>
+  <text x="990" y="385" font-size="12.5" fill="#2e6a42">judges browse live · no login</text>
+  <text x="990" y="404" font-size="12.5" fill="#2e6a42">agent writes incident annotations</text>
+  <text x="990" y="423" font-size="12.5" fill="#2e6a42">to the panel timeline</text>
+  <text x="990" y="448" font-size="12" font-style="italic" fill="#3a7a52">uid: ott-streaming-ops</text>
+
+  <rect x="1270" y="315" width="270" height="150" rx="8" fill="#f2fbf4" stroke="#9ccfa8"/>
+  <text x="1290" y="343" font-size="16" font-weight="700" fill="#1e5631">Agent Observability</text>
+  <text x="1290" y="366" font-size="12.5" fill="#2e6a42">phase durations · tool calls · tokens</text>
+  <text x="1290" y="385" font-size="12.5" fill="#2e6a42">estimated model spend · gate decisions</text>
+  <text x="1290" y="404" font-size="12.5" fill="#2e6a42">run events from Loki</text>
+  <text x="1290" y="429" font-size="12" font-style="italic" fill="#3a7a52">uid: agent-observability</text>
+
+  <!-- gate + audit -->
+  <rect x="970" y="485" width="570" height="135" rx="8" fill="#fff4f4" stroke="#e2a0a0"/>
+  <text x="990" y="513" font-size="16" font-weight="700" fill="#7a2424">Policy gate → action ledger</text>
+  <text x="990" y="536" font-size="12.5" fill="#8a4040">REMEDIATE proposes · never executes — an interactive human decides</text>
+  <text x="990" y="555" font-size="12.5" fill="#8a4040">unattended runs are refused by design (mode:refuse_unattended)</text>
+  <text x="990" y="574" font-size="12.5" fill="#8a4040">every decision lands in the action ledger: SHA-256 hash-chained audit log</text>
+  <text x="990" y="593" font-size="12.5" fill="#8a4040">graded eval matrix scores a NO-ACTION trap — refuse-to-act is the only pass</text>
+
+  <!-- ================= arrows ==================================== -->
+  <!-- sim -> agent (trigger) -->
+  <path d="M 270 285 L 270 300" stroke="#3a3a3a" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <!-- agent -> Gemini (structured calls) -->
+  <path d="M 480 355 L 540 355" stroke="#3a3a3a" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <text x="487" y="345" font-size="11.5" fill="#6a6a6a">phase calls</text>
+  <!-- agent -> MCP -->
+  <path d="M 480 385 C 520 430 520 490 560 520" stroke="#3a3a3a" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <text x="470" y="465" font-size="11.5" fill="#6a6a6a">tool calls (stdio)</text>
+  <!-- sim -> hosted prom/loki (data plane) -->
+  <path d="M 480 210 C 750 195 860 190 968 205" stroke="#7a7a7a" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowData)" fill="none"/>
+  <text x="700" y="188" font-size="11.5" fill="#7a7a7a">remote-write (metrics)</text>
+  <path d="M 480 245 C 820 400 1060 260 1268 232" stroke="#7a7a7a" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowData)" fill="none"/>
+  <text x="880" y="308" font-size="11.5" fill="#7a7a7a">push (logs)</text>
+  <!-- MCP <-> cloud stack -->
+  <path d="M 850 520 C 900 480 920 300 968 260" stroke="#3a3a3a" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)" fill="none"/>
+  <text x="876" y="400" font-size="11.5" fill="#6a6a6a">PromQL · LogQL</text>
+  <path d="M 850 560 C 920 560 900 420 968 395" stroke="#3a3a3a" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <text x="872" y="500" font-size="11.5" fill="#6a6a6a">annotations · dashboards</text>
+  <!-- agent self-telemetry -> obs dashboard + loki -->
+  <path d="M 480 395 C 740 660 1040 500 1268 445" stroke="#9a6a2a" stroke-width="2" stroke-dasharray="2 4" marker-end="url(#arrowData)" fill="none"/>
+  <text x="800" y="580" font-size="11.5" fill="#9a6a2a">self-telemetry (phase s · tokens · cost)</text>
+  <!-- firing alert -> agent -->
+  <path d="M 968 250 C 700 115 520 115 480 180" stroke="#c04040" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <text x="640" y="126" font-size="11.5" fill="#c04040">firing SLO alert triggers the arc</text>
+  <!-- proposal -> policy gate -> action ledger -->
+  <path d="M 860 410 C 990 450 1050 465 1100 483" stroke="#7a2424" stroke-width="2" marker-end="url(#arrow)" fill="none"/>
+  <text x="950" y="448" font-size="11.5" fill="#7a2424">proposal → policy gate → action ledger</text>
+
+  <!-- ================= footer ==================================== -->
+  <text x="60" y="700" font-size="13" font-weight="700" fill="#8a8a8a" letter-spacing="1.5">ONE LIVE LOOP, END TO END</text>
+  <g font-size="13.5" fill="#3a3a3a">
+    <text x="60" y="728">1. Simulator degrades CDN edge cdn-fra1 → hosted Prometheus sees it → SLO rule fires (~4 min brew — 241.7 s witnessed, for: 3m)</text>
+    <text x="60" y="752">2. DETECT isolates the one firing rule from five · TRIANGULATE scopes blast radius with live PromQL (cdn-fra1 1620.58 ms p95, 5xx 3.75%)</text>
+    <text x="60" y="776">3. DIAGNOSE grounds the root cause in Loki (upstream fetch timeouts → 504s, confidence 0.9) · REMEDIATE proposes drain_cdn_edge</text>
+    <text x="60" y="800">4. GATE: no interactive human → execution refused (unattended runs never touch the world) · REPORT posts the annotation and verifies · DETECT→REPORT ≈46 s end to end</text>
+    <text x="60" y="824">5. The agent emits its own run telemetry (phase seconds, tokens, est. cost) → the Agent Observability dashboard observes the observer</text>
+  </g>
+  <text x="60" y="872" font-size="12" fill="#9a9a9a">Fictional platform (StreamFiction) · no real user data · MIT licensed · repo: github.com/ubongn/grafana-incident-director</text>
+</svg>
