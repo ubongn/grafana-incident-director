@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+  <!-- Lower-third template (transparent bg). Duplicate per beat, swap the two
+       text lines. Editor: fade in 200ms, hold, fade out 200ms. -->
+  <rect x="80" y="880" width="1120" height="120" rx="10" fill="#ffffff" fill-opacity="0.94" stroke="#e2e2e2"/>
+  <rect x="80" y="880" width="10" height="120" rx="5" fill="#f60"/>
+  <text x="120" y="932" font-size="34" font-weight="700" fill="#161616" id="headline">HEADLINE — replace per beat</text>
+  <text x="120" y="972" font-size="22" fill="#5a5a5a" id="subline">subline — replace per beat</text>
+</svg>

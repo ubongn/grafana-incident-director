@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+  <!-- AI-observability beat (Beat 9): right-side caption card. -->
+  <rect x="1210" y="120" width="630" height="330" rx="12" fill="#ffffff" fill-opacity="0.95" stroke="#e2e2e2"/>
+  <rect x="1210" y="120" width="10" height="330" rx="5" fill="#9a6a2a"/>
+  <text x="1250" y="180" font-size="34" font-weight="700" fill="#161616">The observer, observed</text>
+  <text x="1250" y="230" font-size="22" fill="#4a4a4a">The agent publishes its own telemetry to</text>
+  <text x="1250" y="260" font-size="22" fill="#4a4a4a">the stack it manages:</text>
+  <text x="1250" y="315" font-size="22" fill="#2e6a42">· runbook phase durations + retries</text>
+  <text x="1250" y="350" font-size="22" fill="#2e6a42">· MCP tool calls per phase</text>
+  <text x="1250" y="385" font-size="22" fill="#2e6a42">· model tokens (prompt / output / thinking)</text>
+  <text x="1250" y="420" font-size="22" fill="#2e6a42">· estimated spend at list price + gate decisions</text>
+</svg>

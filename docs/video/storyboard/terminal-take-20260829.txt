@@ -1,0 +1,63 @@
+﻿agent arc against https://olivetiramisu3480.grafana.net (scenario cdn-edge-degraded, unattended, AI_PROVIDER=vertex)
+[demo] DEMO_MODE=1 -> approval gate forced to refuse_unattended (unattended never executes)
+[harness] ott-edge-latency FIRING after 217.4s
+[demo] === ALERT->PROPOSAL 60s WINDOW OPEN ===
+
+=== incident arc run-20260829-063905-40c9ee (trigger: alert) ===
+[detect] reading alert state through Grafana MCP ...
+[detect] The 'ott-edge-latency' alert rule is firing, indicating high CDN edge latency.
+[triangulate] quantifying blast radius ...
+[triangulate] scope=regional: The 'ott-edge-latency' alert is firing due to extremely high latency (2247.63ms) and 5xx errors (3.39%) at the cdn-fra1 edge, which serves the eu-west region. This is causing an elevated playback error rate (1.89%) in eu-west. Other regions, origins, and transcoders appear healthy. This strongly indicates a degraded CDN edge in eu-west.
+[diagnose] pulling Loki evidence ...
+  [diagnose] attempt 1: no Grafana MCP tool calls made; retrying
+[diagnose] CDN edge cdn-fra1 is experiencing upstream fetch timeouts and 5xx errors, leading to various playback errors (segment_timeout, manifest_error, license_error, drm_init_failed) for players in the eu-west region. (conf=0.9)
+[remediate] drafting proposal ...
+[remediate] proposal: execute / drain_cdn_edge {'edge': 'cdn-fra1'} (41.66s detect->proposal)
+
+--------------------------------------------------------------
+REMEDIATION PROPOSAL (execute)
+--------------------------------------------------------------
+class   : drain_cdn_edge
+params  : {'edge': 'cdn-fra1'}
+effect  : Traffic for the 'eu-west' region will be rerouted away from 'cdn-fra1' to other available CDN edges, which are currently healthy. This should immediately reduce playback errors and latency for users in 'eu-west'.
+risk    : Temporary increase in latency or minor service disruption for 'eu-west' users during the traffic rerouting phase. Potential for increased load on other CDN edges, but current metrics suggest they are well within capacity.
+rollback: Re-enable 'cdn-fra1' to receive traffic. This can be done if the underlying issue with 'cdn-fra1' is resolved or if the impact of draining is worse than the current state.
+why     : The diagnosis and triangulation strongly indicate that CDN edge 'cdn-fra1' is degraded, exhibiting high latency (2247.63ms) and a high 5xx error ratio (3.39%). This directly correlates with the elevated playback error rate (1.89%) observed in the 'eu-west' region, which 'cdn-fra1' serves. Draining this edge will redirect traffic to healthy CDN infrastructure, mitigating the impact on eu-west users.
+--------------------------------------------------------------
+[gate] approved=False by mode:refuse_unattended
+[report] posting annotation + verifying ...
+=== arc run-20260829-063905-40c9ee -> denied ===
+
+
+##############################################################
+DEMO SUMMARY
+##############################################################
+{
+  "scenario": "cdn-edge-degraded",
+  "scenario_id": "sc-005",
+  "alert_rule_uid": "ott-edge-latency",
+  "inject_to_firing_s": 217.4,
+  "outcome": "denied",
+  "detect_to_proposal_s": 41.66
+}
+
+## Incident Report: CDN Edge Latency in eu-west
+
+### What Happened
+An alert for `ott-edge-latency` fired, indicating high CDN edge latency in the `eu-west` region. Further diagnosis revealed that CDN edge `cdn-fra1` was experiencing upstream fetch timeouts and 5xx errors, leading to various playback errors (segment_timeout, manifest_error, license_error, drm_init_failed) for players in the `eu-west` region.
+
+### Evidence
+- **Detection**: `ott-edge-latency` alert rule firing.
+- **Scope**: Regional, specifically `eu-west`.
+- **Diagnosis**: CDN edge `cdn-fra1` showed upstream fetch timeouts and 5xx errors, impacting playback.
+
+### Decision + Gate Outcome
+The proposed remediation was to `drain_cdn_edge` for `cdn-fra1`. However, this action was refused by the gatekeeper (`mode:refuse_unattended`).
+
+### Verification
+Post-refusal, a check of the `ott_cdn_edge_latency_ms` metric for `cdn-fra1` shows a current latency of 185.98 ms. This indicates that the latency has either recovered or the issue was transient, as the value is now within acceptable limits.
+
+### Follow-ups
+- Investigate the reason for the `refuse_unattended` gate decision.
+- Review the upstream fetch timeout and 5xx error logs for `cdn-fra1` during the incident period to understand the root cause.
+- Evaluate the current alert thresholds for `ott-edge-latency` to ensure they are appropriate.

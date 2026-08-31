@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+  <!-- The GATE hero overlay (Beat 6): full-width emphasis band. -->
+  <rect x="0" y="800" width="1920" height="10" fill="#f60"/>
+  <rect x="0" y="810" width="1920" height="270" fill="#ffffff" fill-opacity="0.96"/>
+  <text x="960" y="880" font-size="44" font-weight="800" fill="#a02020" text-anchor="middle">approved = False · decided_by = mode:refuse_unattended</text>
+  <text x="960" y="940" font-size="30" fill="#3a3a3a" text-anchor="middle">The framework gate: an interactive human approves — or nothing executes.</text>
+  <text x="960" y="990" font-size="24" fill="#7a7a7a" text-anchor="middle">Fast, evidence-driven … and leashed. Unattended runs never touch production.</text>
+</svg>

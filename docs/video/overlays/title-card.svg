@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" font-family="Inter, 'Segoe UI', system-ui, sans-serif">
+  <!-- Opening title card. Light theme, no logos. -->
+  <rect width="1920" height="1080" fill="#fafafa"/>
+  <rect x="140" y="380" width="10" height="320" rx="5" fill="#f60"/>
+  <text x="190" y="470" font-size="76" font-weight="800" fill="#161616">Grafana Incident Director</text>
+  <text x="190" y="530" font-size="32" fill="#5a5a5a">An autonomous incident runbook, living inside the Grafana stack</text>
+  <text x="190" y="590" font-size="24" fill="#8a8a8a">Google ADK · Gemini on Vertex AI · hands: Grafana MCP server</text>
+  <text x="190" y="660" font-size="22" fill="#9a9a9a">StreamFiction — a fictional OTT platform · Agentic Cinema hackathon 2026</text>
+</svg>
